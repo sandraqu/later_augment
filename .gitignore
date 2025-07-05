@@ -1,0 +1,34 @@
+# Application-specific ignores
+later_augment_api/log/*.log
+later_augment_api/tmp/
+later_augment_api/vendor/bundle/
+later_augment_api/.bundle/
+later_augment_api/db/*.sqlite3
+later_augment_api/db/*.sqlite3-journal
+later_augment_api/storage/
+later_augment_api/.byebug_history
+later_augment_api/public/assets
+
+# Docker ignores
+**/.DS_Store
+**/.idea/
+**/.vscode/
+
+# Ruby specifics
+.ruby-version
+.rvmrc
+.rbenv-version
+
+# Node specifics
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnpm/
+.yarn/
+
+# Operating System specific
+.DS_Store
+Thumbs.db
+.cache/.env
+.env
