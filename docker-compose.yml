@@ -1,0 +1,71 @@
+services:
+  # PostgreSQL Database Service
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB} # <-- Now comes from .env
+      POSTGRES_USER: ${POSTGRES_USER} # <-- Now comes from .env
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # <-- Now comes from .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app_network # <--- Added custom network
+
+  # Rails API Service
+  web:
+    build:
+      context: ./later_augment_api
+      dockerfile: Dockerfile
+    # Simplified command: let entrypoint.sh fully handle app startup
+    command: "/app/entrypoint.sh" # <--- CORRECTED LINE!
+    volumes:
+      - ./later_augment_api:/app
+      # Corrected Google Credentials volume mapping
+      - ./later_augment_api/config/google-credentials.json:/app/config/google-credentials.json # <--- CORRECTED LINE!
+      - bundle_cache:/bundle
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      RAILS_ENV: development
+      # Explicitly pass individual database credentials, used by database.yml
+      POSTGRES_DB: ${POSTGRES_DB} # <--- CORRECTED (added for database.yml)
+      POSTGRES_USER: ${POSTGRES_USER} # <--- CORRECTED
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # <--- CORRECTED
+      RAILS_DATABASE_HOST: db # <--- CORRECTED (host for Rails to find DB service)
+      SECRET_KEY_BASE: ${RAILS_SECRET_KEY_BASE}
+      # GOOGLE_APPLICATION_CREDENTIALS env var is no longer needed here
+      # as the file is mounted directly to the path Rails expects.
+    networks:
+      - app_network # <--- Added custom network
+
+  # React Frontend Service
+  client:
+    build:
+      context: ./later_augment_client
+      dockerfile: Dockerfile
+    command: npm run dev
+    volumes:
+      - ./later_augment_client:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_RAILS_API_URL: http://localhost:3000
+    depends_on:
+      - web
+    networks:
+      - app_network # <--- Added custom network
+
+volumes:
+  db_data:
+  bundle_cache:
+
+# Define a custom network for better isolation and clarity
+networks: # <--- NEW SECTION!
+  app_network:
+    driver: bridge

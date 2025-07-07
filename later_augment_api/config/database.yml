@@ -1,0 +1,48 @@
+# later_augment_api/config/database.yml
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  host: <%= ENV['RAILS_DATABASE_HOST'] %> # Using the ENV var from .env
+  username: <%= ENV['POSTGRES_USER'] %> # Using the ENV var from .env
+  password: <%= ENV['POSTGRES_PASSWORD'] %> # Using the ENV var from .env
+  database: <%= ENV['POSTGRES_DB'] %> # Using the ENV var from .env
+
+test:
+  <<: *default
+  host: <%= ENV['RAILS_DATABASE_HOST'] %>
+  username: <%= ENV['POSTGRES_USER'] %>
+  password: <%= ENV['POSTGRES_PASSWORD'] %>
+  database: later_augment_test # You'd still likely have a separate test DB name
+
+production:
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %> # For Railway deployment
+# # SQLite. Versions 3.8.0 and up are supported.
+# #   gem install sqlite3
+# #
+# #   Ensure the SQLite 3 gem is defined in your Gemfile
+# #   gem "sqlite3"
+# #
+# default: &default
+#   adapter: sqlite3
+#   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+#   timeout: 5000
+
+# development:
+#   <<: *default
+#   database: storage/development.sqlite3
+
+# # Warning: The database defined as "test" will be erased and
+# # re-generated from your development database when you run "rake".
+# # Do not set this db to the same as development or production.
+# test:
+#   <<: *default
+#   database: storage/test.sqlite3
+
+# production:
+#   <<: *default
+#   database: storage/production.sqlite3

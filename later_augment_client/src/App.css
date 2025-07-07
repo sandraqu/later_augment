@@ -1,0 +1,135 @@
+/* later_augment_client/src/App.css */
+
+/* Basic light mode defaults (these will apply unless .dark-mode is present on body) */
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f0f2f5; /* Light background */
+  color: #333; /* Dark text */
+  font-family: Arial, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+}
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  width: 100%;
+}
+
+.later-augment-app {
+  background-color: #ffffff; /* White background for the app container */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  position: relative; /* For positioning the toggle button */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+}
+
+/* Dark mode styles - applied when body has .dark-mode class */
+body.dark-mode {
+  background-color: #282c34; /* Dark background */
+  color: #f8f8f2; /* Light text */
+}
+
+body.dark-mode .later-augment-app {
+  background-color: #383c4a; /* Slightly lighter dark background for container */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode textarea,
+body.dark-mode button:not([class*="toggle"]) {
+  /* Exclude the toggle button from generic button styling */
+  background-color: #4a4e5c;
+  color: #f8f8f2;
+  border-color: #5a5e6c;
+}
+
+body.dark-mode textarea::placeholder {
+  color: #a0a4b0;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3 {
+  color: #f8f8f2;
+}
+
+body.dark-mode p {
+  color: #cccccc;
+}
+
+body.dark-mode .error {
+  color: #ff6b6b;
+}
+
+body.dark-mode ul li {
+  background: #4a4e5c; /* Darker background for list items */
+  border-color: #5a5e6c;
+}
+
+body.dark-mode ul li p {
+  color: #f8f8f2;
+}
+
+body.dark-mode ul li p:last-child {
+  color: #a0a4b0; /* Lighter grey for timestamp */
+}
+
+body.dark-mode ul li button {
+  /* Targeting the delete button specifically */
+  background-color: #a04040; /* Darker red for dark mode */
+  border-color: #b05050;
+}
+
+body.dark-mode ul li button:hover:not(:disabled) {
+  background-color: #c05050; /* Slightly lighter red on hover */
+}
+
+/* Basic styling for other elements (consistent across themes, or overridden by dark-mode class) */
+h1 {
+  margin-bottom: 20px;
+  color: inherit; /* Inherit color from parent (.later-augment-app or body) */
+}
+
+textarea {
+  width: calc(100% - 20px);
+  max-width: 600px;
+  min-height: 100px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 10px 20px;
+  font-size: 1.1em;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+audio {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 10px;
+}
