@@ -8,6 +8,7 @@ later_augment_api/db/*.sqlite3-journal
 later_augment_api/storage/
 later_augment_api/.byebug_history
 later_augment_api/public/assets
+later_augment_api/config/google-credentials.json
 
 # Docker ignores
 **/.DS_Store
