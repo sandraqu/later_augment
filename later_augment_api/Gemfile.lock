@@ -271,7 +271,7 @@ PLATFORMS
 DEPENDENCIES
   bootsnap
   debug
-  google-cloud-text_to_speech
+  google-cloud-text_to_speech (~> 2.0)
   pg (~> 1.1)
   puma (>= 5.0)
   rack-cors

@@ -1,27 +1,41 @@
 // later_augment_client/src/App.tsx
-
 import { useState, useEffect } from "react";
 import "./App.css";
+import VoicePreviewer from "./components/VoicePreviewer"; // Import the new component
 
+// Define interfaces for better type safety
 interface Speech {
   id: number;
   text: string;
   audio_url: string | null;
   created_at: string;
+  // Include other properties from your Speech model if you want to display them
+  voice_name: string;
+  speaking_rate: number;
+  pitch: number;
 }
 
 function App() {
-  const [inputText, setInputText] = useState("");
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [inputText, setInputText] = useState<string>("");
+  const [audioUrl, setAudioUrl] = useState<string | null>(null); // For the main synthesized speech (newly generated)
+  const [isSynthesizingMain, setIsSynthesizingMain] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [speeches, setSpeeches] = useState<Speech[]>([]);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
+  const [speeches, setSpeeches] = useState<Speech[]>([]); // For the list of saved speeches
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     return window.matchMedia("(prefers-color-scheme: dark)").matches;
   });
 
-  const API_BASE_URL = import.meta.env.VITE_RAILS_API_URL;
+  // State to hold the voice settings selected in VoicePreviewer
+  const [currentVoiceSettings, setCurrentVoiceSettings] = useState<{
+    voiceName: string;
+    languageCode: string;
+    speakingRate: number;
+    pitch: number;
+  } | null>(null);
 
+  const API_BASE_URL: string = import.meta.env.VITE_RAILS_API_URL || "";
+
+  // --- fetchSpeeches function ---
   const fetchSpeeches = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/speeches`);
@@ -38,7 +52,7 @@ function App() {
 
   useEffect(() => {
     fetchSpeeches();
-  }, []);
+  }, [API_BASE_URL]); // Only fetch speeches on mount or API_BASE_URL change
 
   useEffect(() => {
     if (isDarkMode) {
@@ -52,45 +66,64 @@ function App() {
     setIsDarkMode((prevMode) => !prevMode);
   };
 
+  // --- handleSynthesizeSpeech function (for main text) ---
   const handleSynthesizeSpeech = async () => {
-    setIsLoading(true);
+    setIsSynthesizingMain(true);
     setError(null);
-    setAudioUrl(null);
+    setAudioUrl(null); // Clear previous audio on new synthesis attempt
 
     if (!inputText.trim()) {
       setError("Please enter some text to synthesize.");
-      setIsLoading(false);
+      setIsSynthesizingMain(false);
+      return;
+    }
+    if (!currentVoiceSettings?.voiceName) {
+      // Check if voice settings are available
+      setError(
+        "Please select a voice using the previewer before synthesizing."
+      );
+      setIsSynthesizingMain(false);
       return;
     }
 
+    const requestBody = {
+      text: inputText,
+      voice_name: currentVoiceSettings.voiceName,
+      language_code: currentVoiceSettings.languageCode,
+      speaking_rate: currentVoiceSettings.speakingRate,
+      pitch: currentVoiceSettings.pitch,
+    };
+
     try {
+      // REMOVED X-CSRF-Token header
       const response = await fetch(`${API_BASE_URL}/tts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "audio/mpeg",
+          // "X-CSRF-Token": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || "",
+          // ^ REMOVED: No longer needed for API-only Rails app as per previous fixes
         },
-        body: JSON.stringify({ text: inputText }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
+        // Try to parse JSON error from server if available
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          `HTTP error! Status: ${response.status}, Details: ${errorText}`
+          errorData.error ||
+            `HTTP error! Status: ${response.status}, Details: ${response.statusText}`
         );
       }
 
-      const audioBlob = await response.blob();
-      const url = URL.createObjectURL(audioBlob);
-      setAudioUrl(url);
-
-      setInputText("");
-      await fetchSpeeches();
+      const data: Speech = await response.json();
+      setAudioUrl(data.audio_url); // Set URL for the single generated audio player
+      setInputText(""); // Clear the input field
+      await fetchSpeeches(); // Refresh the list of saved speeches to include the new one
     } catch (err: any) {
       console.error("Error during speech synthesis:", err);
       setError(`Failed to synthesize speech: ${err.message}`);
     } finally {
-      setIsLoading(false);
+      setIsSynthesizingMain(false);
     }
   };
 
@@ -100,14 +133,20 @@ function App() {
     }
 
     try {
+      // REMOVED X-CSRF-Token header
       const response = await fetch(`${API_BASE_URL}/speeches/${id}`, {
         method: "DELETE",
+        headers: {
+          // "X-CSRF-Token": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || "",
+          // ^ REMOVED: No longer needed for API-only Rails app as per previous fixes
+        },
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          `HTTP error! Status: ${response.status}, Details: ${errorText}`
+          errorData.error ||
+            `HTTP error! Status: ${response.status}, Details: ${response.statusText}`
         );
       }
 
@@ -121,7 +160,7 @@ function App() {
   };
 
   return (
-    <div className="later-augment-app">
+    <div className={`app-container ${isDarkMode ? "dark-mode" : ""}`}>
       <button
         onClick={toggleDarkMode}
         style={{
@@ -144,89 +183,83 @@ function App() {
 
       <h1>Text-to-Speech Converter</h1>
 
-      <textarea
-        placeholder="Enter text to synthesize..."
-        value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
-        rows={5}
-        cols={50}
-        style={{ marginBottom: "15px", padding: "10px", fontSize: "1em" }}
-      ></textarea>
+      {/* Render the VoicePreviewer component here */}
+      <VoicePreviewer
+        // Pass a callback to update App's state with selected voice details
+        onVoiceSettingsChange={(settings) => setCurrentVoiceSettings(settings)}
+      />
 
-      <button
-        onClick={handleSynthesizeSpeech}
-        disabled={isLoading}
-        style={{ padding: "10px 20px", fontSize: "1.1em", cursor: "pointer" }}
-      >
-        {isLoading ? "Synthesizing..." : "Synthesize Speech"}
-      </button>
+      {/* Main Text-to-Speech Input */}
+      <div className="main-tts-input-section">
+        <h3>Generate Speech from Text</h3>
+        <textarea
+          placeholder="Enter text to synthesize..."
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          rows={5}
+          cols={50}
+          disabled={isSynthesizingMain}
+        ></textarea>
 
-      {error && (
-        <p style={{ color: "red", marginTop: "15px" }}>Error: {error}</p>
-      )}
+        <button
+          onClick={handleSynthesizeSpeech}
+          disabled={
+            isSynthesizingMain || !inputText.trim() || !currentVoiceSettings
+          }
+          className="synthesize-button"
+        >
+          {isSynthesizingMain ? "Synthesizing..." : "Synthesize Speech"}
+        </button>
+      </div>
 
+      {error && <p className="error-message">Error: {error}</p>}
+
+      {/* Player for the newly generated audio (optional) */}
       {audioUrl && (
-        <div style={{ marginTop: "20px" }}>
-          <h3>Play Audio:</h3>
+        <div className="audio-player-container newly-generated">
+          <h3>Last Generated Audio:</h3>
           <audio controls src={audioUrl}>
             Your browser does not support the audio element.
           </audio>
         </div>
       )}
 
-      <div
-        style={{
-          marginTop: "40px",
-          borderTop: "1px solid #eee",
-          paddingTop: "20px",
-        }}
-      >
+      <div className="saved-speeches-section">
         <h2>Saved Speeches</h2>
-        {speeches.length === 0 && !isLoading && !error && (
+        {speeches.length === 0 && !isSynthesizingMain && !error && (
           <p>No speeches saved yet.</p>
         )}
         {error && speeches.length === 0 && (
-          <p style={{ color: "red" }}>Could not load saved speeches.</p>
+          <p className="error-message">Could not load saved speeches.</p>
         )}
-        <ul style={{ listStyle: "none", padding: 0 }}>
+        <ul className="speeches-list">
           {speeches.map((speech) => (
-            <li
-              key={speech.id}
-              style={{
-                // Removed background: '#f9f9f9',
-                border: "1px solid #ddd",
-                borderRadius: "5px",
-                padding: "10px",
-                marginBottom: "10px",
-                textAlign: "left",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
+            <li key={speech.id} className="speech-item">
               <div>
-                <p style={{ margin: 0, fontWeight: "bold" }}>{speech.text}</p>
-                <p
-                  style={{
-                    margin: "5px 0 0",
-                    fontSize: "0.8em" /* Removed color: '#666' */,
-                  }}
-                >
+                <p className="speech-text">{speech.text}</p>
+                <p className="speech-meta">
+                  Voice: {speech.voice_name} | Rate: {speech.speaking_rate} |
+                  Pitch: {speech.pitch}
+                </p>
+                <p className="speech-meta">
                   Saved: {new Date(speech.created_at).toLocaleString()}
                 </p>
               </div>
+
+              {/* --- ADDED AUDIO PLAYER FOR SAVED SPEECHES --- */}
+              {speech.audio_url && (
+                <div className="audio-player-for-saved-speech">
+                  <audio controls preload="none">
+                    <source src={speech.audio_url} type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              )}
+              {/* --- END ADDED AUDIO PLAYER --- */}
+
               <button
                 onClick={() => handleDeleteSpeech(speech.id)}
-                style={{
-                  backgroundColor: "#dc3545",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  padding: "8px 12px",
-                  fontSize: "0.9em",
-                  cursor: "pointer",
-                  marginLeft: "15px",
-                }}
+                className="delete-button"
               >
                 Delete
               </button>

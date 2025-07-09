@@ -23,6 +23,7 @@ services:
     command: "/app/entrypoint.sh" # <--- CORRECTED LINE!
     volumes:
       - ./later_augment_api:/app
+      - rails_storage:/app/storage
       # Corrected Google Credentials volume mapping
       - ./later_augment_api/config/google-credentials.json:/app/config/google-credentials.json # <--- CORRECTED LINE!
       - bundle_cache:/bundle
@@ -55,7 +56,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      VITE_RAILS_API_URL: http://localhost:3000
+      VITE_RAILS_API_URL: ${VITE_RAILS_API_URL}
     depends_on:
       - web
     networks:
@@ -64,6 +65,8 @@ services:
 volumes:
   db_data:
   bundle_cache:
+  rails_storage:
+    driver: local
 
 # Define a custom network for better isolation and clarity
 networks: # <--- NEW SECTION!

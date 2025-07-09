@@ -35,7 +35,7 @@ gem "bootsnap", require: false
 gem "rack-cors"
 
 # For Google Cloud Text-to-Speech
-gem 'google-cloud-text_to_speech'
+gem 'google-cloud-text_to_speech', '~> 2.0'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

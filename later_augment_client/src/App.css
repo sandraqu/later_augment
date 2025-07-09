@@ -1,122 +1,159 @@
-/* later_augment_client/src/App.css */
+/* App.css */
 
-/* Basic light mode defaults (these will apply unless .dark-mode is present on body) */
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #f0f2f5; /* Light background */
-  color: #333; /* Dark text */
-  font-family: Arial, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
-}
-
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* General container styling */
+.app-container {
+  font-family: sans-serif;
   text-align: center;
-  width: 100%;
-}
-
-.later-augment-app {
-  background-color: #ffffff; /* White background for the app container */
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-  position: relative; /* For positioning the toggle button */
-  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
-}
-
-/* Dark mode styles - applied when body has .dark-mode class */
-body.dark-mode {
-  background-color: #282c34; /* Dark background */
-  color: #f8f8f2; /* Light text */
-}
-
-body.dark-mode .later-augment-app {
-  background-color: #383c4a; /* Slightly lighter dark background for container */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-}
-
-body.dark-mode textarea,
-body.dark-mode button:not([class*="toggle"]) {
-  /* Exclude the toggle button from generic button styling */
-  background-color: #4a4e5c;
-  color: #f8f8f2;
-  border-color: #5a5e6c;
-}
-
-body.dark-mode textarea::placeholder {
-  color: #a0a4b0;
-}
-
-body.dark-mode h1,
-body.dark-mode h2,
-body.dark-mode h3 {
-  color: #f8f8f2;
-}
-
-body.dark-mode p {
-  color: #cccccc;
-}
-
-body.dark-mode .error {
-  color: #ff6b6b;
-}
-
-body.dark-mode ul li {
-  background: #4a4e5c; /* Darker background for list items */
-  border-color: #5a5e6c;
-}
-
-body.dark-mode ul li p {
-  color: #f8f8f2;
-}
-
-body.dark-mode ul li p:last-child {
-  color: #a0a4b0; /* Lighter grey for timestamp */
-}
-
-body.dark-mode ul li button {
-  /* Targeting the delete button specifically */
-  background-color: #a04040; /* Darker red for dark mode */
-  border-color: #b05050;
-}
-
-body.dark-mode ul li button:hover:not(:disabled) {
-  background-color: #c05050; /* Slightly lighter red on hover */
-}
-
-/* Basic styling for other elements (consistent across themes, or overridden by dark-mode class) */
-h1 {
-  margin-bottom: 20px;
-  color: inherit; /* Inherit color from parent (.later-augment-app or body) */
-}
-
-textarea {
-  width: calc(100% - 20px);
-  max-width: 600px;
-  min-height: 100px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 1em;
-  padding: 10px;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  transition: background-color 0.3s, color 0.3s;
+  min-height: 100vh; /* Ensure it takes full viewport height */
   box-sizing: border-box;
 }
 
+/* Dark mode styles */
+.dark-mode {
+  background-color: #282c34;
+  color: #f8f8f2;
+}
+
+.dark-mode h1,
+.dark-mode h2,
+.dark-mode h3,
+.dark-mode label {
+  color: #f8f8f2;
+}
+
+.dark-mode select,
+.dark-mode input[type="number"],
+.dark-mode textarea {
+  background-color: #3b3f46;
+  color: #f8f8f2;
+  border-color: #555;
+}
+
+.dark-mode .speech-item {
+  background-color: #3b3f46;
+  border-color: #555;
+}
+.dark-mode .audio-player-container {
+  background-color: #3b3f46;
+  border-color: #555;
+}
+.dark-mode .saved-speeches-section {
+  border-top-color: #555;
+}
+.dark-mode .voice-preview-section {
+  border-bottom-color: #555;
+  background-color: #3b3f46;
+  border-color: #555;
+}
+.dark-mode .voice-preview-section select,
+.dark-mode .voice-preview-section input[type="range"] {
+  background-color: #4a4e55;
+  border-color: #6a6e7c;
+}
+.dark-mode .voice-preview-section .audio-player-container {
+  background-color: #4a4e55;
+}
+
+/* Input groups for layout */
+.input-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.input-group select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  background-color: white; /* Ensure visible in light mode */
+}
+
+.input-group-horizontal {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.input-control {
+  flex: 1;
+  min-width: 250px;
+  text-align: left;
+}
+
+.input-control label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.input-control input[type="range"] {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 8px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: 0.2s;
+  transition: opacity 0.2s;
+  border-radius: 4px;
+}
+
+.dark-mode .input-control input[type="range"] {
+  background: #555;
+}
+
+.input-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #007bff;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.input-control input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #007bff;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 1em;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+/* Buttons */
 button {
+  padding: 10px 20px;
+  font-size: 1.1em;
+  cursor: pointer;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 5px;
-  cursor: pointer;
-  padding: 10px 20px;
-  font-size: 1.1em;
-  transition: background-color 0.3s ease, color 0.3s ease,
-    border-color 0.3s ease;
+  transition: background-color 0.2s;
 }
 
 button:hover:not(:disabled) {
@@ -128,8 +165,97 @@ button:disabled {
   cursor: not-allowed;
 }
 
-audio {
+.preview-button,
+.synthesize-button {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.delete-button {
+  background-color: #dc3545;
+}
+
+.delete-button:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+/* Audio Player */
+.audio-player-container {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.audio-player-container h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.audio-player-container audio {
   width: 100%;
-  max-width: 600px;
-  margin-top: 10px;
+}
+
+/* Error Message */
+.error-message {
+  color: red;
+  margin-top: 15px;
+}
+
+/* Saved Speeches List */
+.saved-speeches-section {
+  margin-top: 40px;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.speeches-list {
+  list-style: none;
+  padding: 0;
+}
+
+.speech-item {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+}
+
+.speech-text {
+  margin: 0;
+  font-weight: bold;
+}
+
+.speech-meta {
+  margin: 5px 0 0;
+  font-size: 0.8em;
+  color: #666;
+}
+
+.dark-mode .speech-meta {
+  color: #bbb;
+}
+
+/* Component specific sections */
+.voice-preview-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.main-tts-input-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px dashed #eee; /* Separator for clarity */
+}
+.dark-mode .main-tts-input-section {
+  border-top-color: #555;
 }
