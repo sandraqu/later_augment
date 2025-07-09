@@ -85,11 +85,12 @@ def create
   pitch = params[:pitch].to_f # Ensure float conversion
 
   # Basic validation for required parameters
-  if text_to_synthesize.blank? || voice_name.blank? || language_code.blank?
-    return render json: { error: "Text, voice name, and language code are required for speech generation." }, status: :bad_request
+  if text_to_synthesize.strip.start_with?('<speak>') && text_to_synthesize.strip.end_with?('</speak>')
+    input_text = { ssml: text_to_synthesize }
+  else
+    input_text = { text: text_to_synthesize }
   end
-
-  input_text = { text: text_to_synthesize }
+  
   voice_params = { language_code: language_code, name: voice_name }
   audio_config = {
     audio_encoding: :MP3,
